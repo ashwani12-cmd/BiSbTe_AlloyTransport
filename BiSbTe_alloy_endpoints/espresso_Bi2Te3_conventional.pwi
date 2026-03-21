@@ -1,0 +1,68 @@
+&CONTROL
+   calculation      = 'scf'
+   verbosity        = 'high'
+   restart_mode     = 'from_scratch'
+   tstress          = .true.
+   tprnfor          = .true.
+   outdir           = './'
+   etot_conv_thr    = 1e-08
+   forc_conv_thr    = 1e-08
+   disk_io          = 'none'
+   pseudo_dir       = '/home/IITB/multiscale-mechanics/ashwani12/software/tools/PP/PBE_ONCV/'
+/
+&SYSTEM
+   ibrav            = 0
+   nat              = 15
+   ntyp             = 2
+   ecutwfc          = 120.0
+   occupations      = 'smearing'
+   degauss          = 0.01
+   smearing         = 'mp'
+   vdw_corr         = 'grimme-d3'
+   dftd3_version    = 4
+   dftd3_threebody  = .true.
+/
+&ELECTRONS
+   electron_maxstep = 400
+   conv_thr         = 1e-08
+   mixing_beta      = 0.3
+/
+&IONS
+/
+&CELL
+/
+&FCP
+/
+&RISM
+/
+ATOMIC_SPECIES
+Bi 208.9804 Bi.UPF
+Te 127.6 Te.UPF
+
+K_POINTS automatic
+10 10 1 0 0 0
+
+
+CELL_PARAMETERS (angstrom)
+   4.390144481   0.000000000   0.000000000
+  -2.195072240   3.801976647  -0.000000000
+  -0.000000000  -0.000000000  30.238078937
+
+ATOMIC_POSITIONS (angstrom)
+Bi               0.0000000000       -0.0000000000       12.0997687570
+Bi              -0.0000000000        0.0000000000       18.1383101796
+Bi               2.1950722403        1.2673255488       22.1790558630
+Bi               2.1950722403        1.2673255488       28.2177645803
+Bi               0.0000000000        2.5346510977        2.0203143563
+Bi               0.0000000000        2.5346510977        8.0590230736
+Te              -0.0000000000       -0.0000000000        6.3284191979
+Te               0.0000000000       -0.0000000000       23.9096597387
+Te               2.1950722403        1.2673255488       16.4077024532
+Te               2.1950722403        1.2673255488        3.7509045240
+Te               0.0000000000        2.5346510977       26.4871744126
+Te               0.0000000000        2.5346510977       13.8303764835
+Te               0.0000000000        0.0000000000       -0.0000000000
+Te               2.1950722403        1.2673255488       10.0793884926
+Te               0.0000000000        2.5346510977       20.1586904441
+
+
