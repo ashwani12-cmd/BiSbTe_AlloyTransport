@@ -1,0 +1,151 @@
+==============================================
+ Job start time : Sun Apr 12 20:17:00 IST 2026
+ Hostname       : rmgpu003
+ SLURM Job ID   : 259905
+==============================================
+=== CUDA SOFTWARE STACK ===
+/home/apps/spack/opt/spack/linux-almalinux8-cascadelake/gcc-14.2.0/cuda-12.8.0-myby63mp5x5brtstiuzbawdvyi2rjyf6/bin/nvcc
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2025 NVIDIA Corporation
+Built on Wed_Jan_15_19:20:09_PST_2025
+Cuda compilation tools, release 12.8, V12.8.61
+Build cuda_12.8.r12.8/compiler.35404655_0
+Sun Apr 12 20:17:00 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 550.54.14              Driver Version: 550.54.14      CUDA Version: 12.4     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A100 80GB PCIe          Off |   00000000:3B:00.0 Off |                   On |
+| N/A   33C    P0             41W /  300W |       0MiB /  81920MiB |     N/A      Default |
+|                                         |                        |              Enabled |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA A100 80GB PCIe          Off |   00000000:5E:00.0 Off |                    0 |
+| N/A   63C    P0            162W /  300W |   10741MiB /  81920MiB |     50%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| MIG devices:                                                                            |
++------------------+----------------------------------+-----------+-----------------------+
+| GPU  GI  CI  MIG |                     Memory-Usage |        Vol|      Shared           |
+|      ID  ID  Dev |                       BAR1-Usage | SM     Unc| CE ENC DEC OFA JPG    |
+|                  |                                  |        ECC|                       |
+|==================+==================================+===========+=======================|
+|  No MIG devices found                                                                   |
++-----------------------------------------------------------------------------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    1   N/A  N/A    617574      C   python                                      10732MiB |
++-----------------------------------------------------------------------------------------+
+
+=== GPU TOPOLOGY ===
+	[4mGPU0	GPU1	NIC0	CPU Affinity	NUMA Affinity	GPU NUMA ID[0m
+GPU0	 X 	SYS	SYS	0-23	0		N/A
+GPU1	SYS	 X 	SYS	0-23	0		N/A
+NIC0	SYS	SYS	 X 				
+
+Legend:
+
+  X    = Self
+  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)
+  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node
+  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
+  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)
+  PIX  = Connection traversing at most a single PCIe bridge
+  NV#  = Connection traversing a bonded set of # NVLinks
+
+NIC Legend:
+
+  NIC0: mlx5_0
+
+
+=== MIG STATUS ===
+GPU 0: NVIDIA A100 80GB PCIe (UUID: GPU-10d84dad-eabb-3b49-65d1-0005707de598)
+GPU 1: NVIDIA A100 80GB PCIe (UUID: GPU-52533995-794b-aacc-1467-d5dd530d2329)
+    MIG Mode
+        Current                           : Enabled
+        Pending                           : Enabled
+    Accounting Mode                       : Disabled
+    Accounting Mode Buffer Size           : 4000
+    Driver Model
+        Current                           : N/A
+        Pending                           : N/A
+    Serial Number                         : 1650724020566
+    GPU UUID                              : GPU-10d84dad-eabb-3b49-65d1-0005707de598
+    Minor Number                          : 0
+    MIG Mode
+        Current                           : Disabled
+        Pending                           : Disabled
+    Accounting Mode                       : Disabled
+    Accounting Mode Buffer Size           : 4000
+    Driver Model
+        Current                           : N/A
+        Pending                           : N/A
+    Serial Number                         : 1650724021087
+    GPU UUID                              : GPU-52533995-794b-aacc-1467-d5dd530d2329
+    Minor Number                          : 1
+
+=== DETAILED GPU INFO ===
+Failed to parse --display/-d flags
+
+=== CLOCKS & POWER ===
+index, name, pstate, clocks.current.sm [MHz], clocks.current.memory [MHz], clocks.current.graphics [MHz], clocks.max.sm [MHz], clocks.max.memory [MHz], power.limit [W], power.draw [W]
+0, NVIDIA A100 80GB PCIe, P0, 1410 MHz, 1512 MHz, 1410 MHz, 1410 MHz, 1512 MHz, 300.00 W, 61.69 W
+1, NVIDIA A100 80GB PCIe, P0, 1410 MHz, 1512 MHz, 1410 MHz, 1410 MHz, 1512 MHz, 300.00 W, 162.90 W
+
+=== ENVIRONMENT VARIABLES ===
+CUDA_VISIBLE_DEVICES=1
+LD_LIBRARY_PATH=/home/apps/spack/opt/spack/linux-almalinux8-cascadelake/gcc-14.2.0/cuda-12.8.0-myby63mp5x5brtstiuzbawdvyi2rjyf6/lib64:/home/apps/spack/opt/spack/linux-almalinux8-cascadelake/gcc-12.4.0/libxml2-2.13.4-en2eed4icbjy7n3xhtl2j2cevpyb6npb/lib:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/xz-5.4.6-je37lj4hysqhaqucqy4xy4zd5lumeybp/lib:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/gcc-runtime-8.5.0-cqzkmjoidtgywj4bmkt5p5yhh4rlrbbu/lib:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/gcc-14.2.0-777kyuf4vkkigdgkahtpexd4ciudue6t/lib:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/gcc-14.2.0-777kyuf4vkkigdgkahtpexd4ciudue6t/lib64:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/mpc-1.3.1-qiu6dv2oinirue455thv2d7orovs35j2/lib:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/mpfr-4.2.1-wvjtu4c4lry3wbwergifwdmvtpxc5kbx/lib:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/gmp-6.3.0-4gikgahplgp7q2zncrx7qaw36pggcu32/lib:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/binutils-2.43.1-kdsptcvu47ycjbjvxd5jxc3forasqox2/lib:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/zstd-1.5.6-fg5aduuvpbenkjrxckapajfxgpfm4w7d/lib:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/zlib-ng-2.2.1-orhazg6c76zhyghao4pyloosvciayj2k/lib:/home/IITB/multiscale-mechanics/ashwani12/software/installed/kim-api/lib64:/home/IITB/multiscale-mechanics/ashwani12/spack/linux-cascadelake/netlib-scalapack-2.2.2-rylihtu4gd5p7irb2p5xrykgczapahzw/lib:/home/IITB/multiscale-mechanics/ashwani12/software/installed/kim-api/lib:/home/IITB/multiscale-mechanics/ashwani12/software/installed/openblas/lib::
+PATH=/home/apps/spack/opt/spack/linux-almalinux8-cascadelake/gcc-14.2.0/cuda-12.8.0-myby63mp5x5brtstiuzbawdvyi2rjyf6/bin:/home/apps/spack/opt/spack/linux-almalinux8-cascadelake/gcc-12.4.0/libxml2-2.13.4-en2eed4icbjy7n3xhtl2j2cevpyb6npb/bin:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/xz-5.4.6-je37lj4hysqhaqucqy4xy4zd5lumeybp/bin:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/gcc-14.2.0-777kyuf4vkkigdgkahtpexd4ciudue6t/bin:/home/apps/spack/opt/spack/linux-almalinux8-skylake_avx512/gcc-8.5.0/binutils-2.43.1-kdsptcvu47ycjbjvxd5jxc3forasqox2/bin:/home/IITB/multiscale-mechanics/ashwani12/software/tools/VACF_PDOS:/home/IITB/multiscale-mechanics/ashwani12/software/tools/phana/build:/home/IITB/multiscale-mechanics/ashwani12/software/tools/phana:/home/IITB/multiscale-mechanics/ashwani12/software/tools/latgen:/home/IITB/multiscale-mechanics/ashwani12/software/tools/Phono3py-Power-Tools:/home/IITB/multiscale-mechanics/ashwani12/software/builds/GPUMD/src:/home/IITB/multiscale-mechanics/ashwani12/software/builds/mlip-2/bin:/home/IITB/multiscale-mechanics/ashwani12/software/builds/tsase-795/tsase/bin:/home/IITB/multiscale-mechanics/ashwani12/software/builds/gulp-6.3/Src:/home/IITB/multiscale-mechanics/ashwani12/software/installed/vmd/bin:/home/apps/spack/bin:/home/IITB/multiscale-mechanics/ashwani12/software/installed/cmake-4.0.2/bin:/home/IITB/multiscale-mechanics/ashwani12/anaconda3/envs/SNAP/bin:/home/IITB/multiscale-mechanics/ashwani12/anaconda3/condabin:/home/IITB/multiscale-mechanics/ashwani12/.local/bin:/home/IITB/multiscale-mechanics/ashwani12/bin:/lustre-scratch/DDN/exa-client/exa_client_perf_scripts-1.1.9:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/var/lib/snapd/snap/bin:/home/IITB/multiscale-mechanics/ashwani12/software/installed/atomsk/bin:/home/IITB/multiscale-mechanics/ashwani12/software/installed/matlab-install/bin:/home/IITB/multiscale-mechanics/ashwani12/software/builds/tdep/bin:/home/IITB/multiscale-mechanics/ashwani12/software/installed/kim-api/bin
+
+=== Starting GPU monitor ===
+=== Starting GPUMD ===
+Start time: Sun Apr 12 20:17:03 IST 2026
+GPUMD exit code: 0
+End time: Mon Apr 13 16:25:34 IST 2026
+=== FINAL GPU STATE ===
+Mon Apr 13 16:25:40 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 550.54.14              Driver Version: 550.54.14      CUDA Version: 12.4     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A100 80GB PCIe          Off |   00000000:3B:00.0 Off |                   On |
+| N/A   33C    P0             62W /  300W |       0MiB /  81920MiB |     N/A      Default |
+|                                         |                        |              Enabled |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA A100 80GB PCIe          Off |   00000000:5E:00.0 Off |                    0 |
+| N/A   62C    P0             85W /  300W |       0MiB /  81920MiB |      2%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| MIG devices:                                                                            |
++------------------+----------------------------------+-----------+-----------------------+
+| GPU  GI  CI  MIG |                     Memory-Usage |        Vol|      Shared           |
+|      ID  ID  Dev |                       BAR1-Usage | SM     Unc| CE ENC DEC OFA JPG    |
+|                  |                                  |        ECC|                       |
+|==================+==================================+===========+=======================|
+|  No MIG devices found                                                                   |
++-----------------------------------------------------------------------------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+==============================================
+ Job finished at: Mon Apr 13 16:25:42 IST 2026
+==============================================

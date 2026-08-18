@@ -1,0 +1,11 @@
+Lmod Warning:
+-------------------------------------------------------------------------------
+The following dependent module(s) are not currently loaded:
+gcc-runtime/14.2.0-gcc-14.2.0-vnsejor (required by:
+libxml2/2.13.4-gcc-12.4.0-en2eed4, cuda/12.8.0-gcc-14.2.0-myby63m),
+glibc/2.28-gcc-14.2.0-guwah75 (required by: libxml2/2.13.4-gcc-12.4.0-en2eed4,
+cuda/12.8.0-gcc-14.2.0-myby63m)
+-------------------------------------------------------------------------------
+
+
+

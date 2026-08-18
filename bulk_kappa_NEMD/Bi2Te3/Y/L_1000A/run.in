@@ -1,0 +1,27 @@
+potential nep_y2026_m04_d08_h20_m24_s14_generation100000.txt 0
+
+# Material    : Bi2Te3
+# Transport   : Y
+# Supercell   : 10 x 228 x 10
+# L_transport : 100.090 nm
+# A_cross     : 132.7629 nm2
+# Atoms       : 342000
+
+minimize fire 1.0e-5 100000 1
+ensemble    nve
+time_step   0
+dump_xyz    -1 0 1 relaxed.xyz
+run         1
+
+velocity 300
+time_step 1
+ensemble npt_ber 300 300 100 0.0 0.0 0.0 0.0 0.0 0.0 55.0 55.0 10.0 8.0 8.0 20.0 1000
+dump_thermo 1000
+run 1000000
+
+fix 0
+ensemble heat_lan 300 100 20 1 8
+compute 0 10 100 temperature jp jk
+compute_shc 2 250 1 1000 50.0 group 0 4
+dump_thermo 1000
+run 5000000
