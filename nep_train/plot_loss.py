@@ -42,39 +42,53 @@ def apply_style(ax):
 data = np.loadtxt("loss.out", skiprows=1)
 
 step = data[:, 0]
-gen  = step / 100.0
-
-total_loss = data[:, 1]
-l1_loss    = data[:, 2]
-l2_loss    = data[:, 3]
-
-rmse_e_tr = data[:, 4]
-rmse_f_tr = data[:, 5]
-rmse_v_tr = data[:, 6]
 
 # ============================================================
-# PLOT: LOSS EVOLUTION (LEGEND INSIDE)
+# LIMIT TO 100k STEPS
+# ============================================================
+max_step = 300000
+mask = step <= max_step
+
+step = step[mask]
+gen  = step / 100.0
+
+total_loss = data[:, 1][mask]
+l1_loss    = data[:, 2][mask]
+l2_loss    = data[:, 3][mask]
+
+rmse_e_tr = data[:, 4][mask]
+rmse_f_tr = data[:, 5][mask]
+rmse_v_tr = data[:, 6][mask]
+
+# ============================================================
+# PLOT
 # ============================================================
 fig, ax = plt.subplots(figsize=(5, 5))
 
-ax.plot(gen, total_loss, lw=2, label="Total loss")
-ax.plot(gen, l1_loss,    lw=2, label="L1 regularization")
-ax.plot(gen, l2_loss,    lw=2, label="L2 regularization")
+ax.plot(gen, total_loss, label="Total loss")
+ax.plot(gen, l1_loss,    label="L1 regularization")
+ax.plot(gen, l2_loss,    label="L2 regularization")
 
-ax.plot(gen, rmse_e_tr,  lw=2, label="Energy (train)")
-ax.plot(gen, rmse_f_tr,  lw=2, label="Force (train)")
-ax.plot(gen, rmse_v_tr,  lw=2, label="Virial (train)")
+ax.plot(gen, rmse_e_tr,  label="Energy (train)")
+ax.plot(gen, rmse_f_tr,  label="Force (train)")
+ax.plot(gen, rmse_v_tr,  label="Virial (train)")
 
+# log scales
 ax.set_xscale("log")
 ax.set_yscale("log")
 
+# apply style
 apply_style(ax)
 
+# labels
 ax.set_xlabel("Generation / 100")
 ax.set_ylabel("Loss functions")
 
+# limit x-axis tightly to 100k
+ax.set_xlim(gen.min(), gen.max())
+
 # ============================================================
-# LEGEND INSIDE (JOURNAL SAFE)
+# LEGEND
 # ============================================================
 leg = ax.legend(
     loc="best",
@@ -86,11 +100,13 @@ leg = ax.legend(
 leg.get_frame().set_edgecolor("black")
 leg.get_frame().set_linewidth(1.0)
 
-
+# ============================================================
+# SAVE
+# ============================================================
 fig.tight_layout()
-fig.savefig("loss_evolution.pdf", bbox_inches="tight", pad_inches=0)
+fig.savefig("loss_evolution_100k.pdf", bbox_inches="tight", pad_inches=0)
+
 plt.show()
 plt.close(fig)
 
-print("✅ Loss evolution plot saved (legend inside, publication-ready).")
-
+print("✅ Loss evolution plot (0–100k steps) saved successfully.")
