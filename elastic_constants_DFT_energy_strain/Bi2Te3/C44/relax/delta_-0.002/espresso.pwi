@@ -1,0 +1,67 @@
+! Set=C44  delta=-0.002000
+&CONTROL
+   calculation      = 'relax'
+   verbosity        = 'high'
+   restart_mode     = 'from_scratch'
+   tstress          = .true.
+   tprnfor          = .true.
+   outdir           = './'
+   etot_conv_thr    = 1e-10
+   forc_conv_thr    = 1e-10
+   disk_io          = 'none'
+   pseudo_dir       = '/home/IITB/multiscale-mechanics/amit.k.singh/PP/PBE_ONCV/'
+/
+&SYSTEM
+   ibrav            = 0
+   nat              = 15
+   ntyp             = 2
+   ecutwfc          = 120.0
+   occupations      = 'smearing'
+   degauss          = 0.01
+   smearing         = 'mp'
+   vdw_corr         = 'grimme-d3'
+   dftd3_version    = 4
+   dftd3_threebody  = .true.
+/
+&ELECTRONS
+   electron_maxstep = 400
+   conv_thr         = 1e-12
+   mixing_beta      = 0.3
+/
+&IONS
+/
+&CELL
+/
+&FCP
+/
+&RISM
+/
+ATOMIC_SPECIES
+Bi 208.9804 Bi.UPF
+Te 127.6 Te.UPF
+
+K_POINTS automatic
+12 12 1  0 0 0
+
+CELL_PARAMETERS angstrom
+4.38989458200000 0.00000000000000 0.00000000000000
+-2.19494729000000 3.80176022800000 -0.00760352045600
+0.00000000000000 -0.06048570759400 30.24285379700000
+
+ATOMIC_POSITIONS angstrom
+Bi 0.0000000000 -0.0242023603 12.1011801581  
+Bi 0.0000000000 -0.0362833473 18.1416736385  
+Bi 2.1949472907 1.2228892968 22.1795216261  
+Bi 2.1949472907 1.2108079648 28.2201876558  
+Bi 0.0000000000 2.5304665550 2.0150626205  
+Bi 0.0000000000 2.5183852230 8.0557286501  
+Te 0.0000000000 -0.0126590835 6.3295417669  
+Te 0.0000000000 -0.0478266241 23.9133120298  
+Te 2.1949472907 1.2344325200 16.4079100226  
+Te 2.1949472907 1.2597507848 3.7487776227  
+Te 0.0000000000 2.4815237350 26.4864726536  
+Te 0.0000000000 2.5068419998 13.8273402537  
+Te 0.0000000000 0.0000000000 0.0000000000  
+Te 2.1949472907 1.2470913216 10.0785092361  
+Te 0.0000000000 2.4941831982 20.1567410402  
+

@@ -1,0 +1,30 @@
+potential nep_y2026_m04_d08_h20_m24_s14_generation100000.txt 0
+
+# Superlattice  : SI_30Bi_30Sb_TeTe_10x14
+# L_transport   : 60.114 nm  (z-direction)
+# A_cross       : 22.5956 nm²
+# Atoms         : 42000
+# Interfaces    : 1 (real) + 1 (periodic, buried in wall)
+
+# ── Step 1: Minimize ─────────────────────────────────────────
+minimize fire 1.0e-5 100000 1
+ensemble    nve
+time_step   0
+dump_xyz    1 relaxed.xyz
+run         1
+
+# ── Step 2: NPT Equilibration ─────────────────────────────────
+velocity 300
+time_step 1
+ensemble npt_ber 300 400 100 0.0 0.0 0.0 0.0 0.0 0.0 55.0 55.0 10.0 8.0 8.0 20.0 1000
+dump_thermo 1000
+run 1000000
+
+# ── Step 3: NEMD Production ───────────────────────────────────
+fix 0
+ensemble heat_lan 400 100 30 1 8
+compute 0 10 100 temperature jp jk
+compute_shc 2 250 2 1000 50.0 group 0 4
+compute_chunk 10 100 bin/1d z lower 6.0 temperature density/number
+dump_thermo 1000
+run 5000000
