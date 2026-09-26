@@ -4,12 +4,23 @@ Thermal transport and lattice dynamics of Bi–Sb–Te alloys using neural equiv
 
 This repository contains the DFT reference structures, training dataset, trained NEP model, and analysis scripts used to study lattice thermal transport and mechanical properties in (Bi₁₋ₓSbₓ)₂Te₃ alloys and Bi₂Te₃/Sb₂Te₃ interfaces — including bulk thermal conductivity (κ), interfacial Kapitza resistance (R_K), and elastic constants (Cij).
 
+## Which potential reproduces the paper
+
+Use **`nep_train/nep.txt`** — the **generation-100,000** checkpoint,
+md5 `545adcd43d8d8e19928a9f75937dee52`. That is the potential behind *every* molecular
+dynamics result in the paper, and the accuracy quoted there (2.40 meV/atom and
+105.88 meV/Å on the test set) is its accuracy.
+
+The 200,000 and 300,000 generation checkpoints are also included, under their own names,
+but were **not** used for any published result. All the checkpoint files are 186,193 bytes,
+so file size does not tell them apart — check the md5. See `nep_train/README.md`.
+
 ## Repository structure
 
 ```
 BiSbTe_AlloyTransport/
 ├── BiSbTe_alloy_endpoints/
-│   ├── Bi.UPF, Sb.UPF, Te.UPF                        # LDA ONCV pseudopotentials (Quantum ESPRESSO)
+│   ├── Bi.UPF, Sb.UPF, Te.UPF                        # PBE ONCV pseudopotentials, fully relativistic (Quantum ESPRESSO)
 │   ├── espresso_Bi2Te3_primitive.pwi                 # DFT-relaxed primitive cells, end-members
 │   ├── espresso_Bi2Te3_conventional.pwi
 │   ├── espresso_Bi2Te3_332_supercell_primitive.pwi
@@ -34,7 +45,8 @@ BiSbTe_AlloyTransport/
 │   ├── submit.sh                    # Cluster job submission script
 │   ├── train.xyz, test.xyz          # Training/test sets used for this run
 │   ├── nep_y2026_*.txt / .restart   # Trained NEP checkpoints (100k / 200k / 300k generations)
-│   ├── nep.txt, nep.restart         # Final/active model (symlink or copy of latest checkpoint)
+│   ├── nep.txt                      # THE POTENTIAL USED IN THE PAPER (gen-100k; md5 545adcd4...)
+│   ├── nep.restart                  # matching restart file
 │   ├── energy_train.out,  energy_test.out
 │   ├── force_train.out,   force_test.out
 │   ├── stress_train.out,  stress_test.out
@@ -158,7 +170,7 @@ BiSbTe_AlloyTransport/
 
 ## Workflow overview
 
-1. **Structure generation** (`BiSbTe_alloy_endpoints/`) — DFT-relaxed primitive and conventional cells for Bi₂Te₃, Sb₂Te₃, and (Bi₁₋ₓSbₓ)₂Te₃ alloy compositions (20/40/60/80% Sb) computed in Quantum ESPRESSO with LDA ONCV pseudopotentials.
+1. **Structure generation** (`BiSbTe_alloy_endpoints/`) — DFT-relaxed primitive and conventional cells for Bi₂Te₃, Sb₂Te₃, and (Bi₁₋ₓSbₓ)₂Te₃ alloy compositions (20/40/60/80% Sb) computed in Quantum ESPRESSO with PBE ONCV pseudopotentials (fully relativistic).
 2. **Training set construction** (`training_data_json_format/`) — Equilibrium structures are perturbed via random displacement, uniaxial strain, and shear strain to sample the configuration space needed for a robust interatomic potential, without requiring full AIMD. The dataset is converted to NEP and MTP formats (`training_data_nep_format/`, `training_data_mtp_format/`) via `script/json_to_nepxyz.ipynb`.
 3. **NEP training** (`nep_train/`) — A neural equivariant potential is trained on energies, forces, virials, and stresses from the dataset, with parity plots (`fig/`) and the loss curve used to validate accuracy on held-out test data.
 4. **Bulk thermal conductivity** (`bulk_kappa_NEMD/`) — NEMD simulations of pure Bi₂Te₃ along the X, Y, and Z crystallographic directions, run over a series of system lengths for finite-size extrapolation of κ.
