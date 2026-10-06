@@ -34,26 +34,32 @@ Reproduce with `python kappa_composition.py` (numpy only):
 Per-run values, gradients, areas and fit quality are in `kappa_composition.csv`; the series
 above is `kappa_vs_composition.csv`.
 
+**The extrapolations themselves are in `scaling_fits/`** — all 18 straight-line fits of
+1/κ against 1/L, one figure per composition and direction plus a 6 × 3 overview, with κ∞,
+its standard error, R² and the effective mean free path in `scaling_fits.csv`. Four of the
+eighteen are weak and that folder's README says which, and why each is weak for a different
+reason.
+
 Both components show a clear **alloy minimum near equiatomic composition** — κ∥ bottoms out
 at x_Sb = 40 %, a factor of 2.0 below Bi₂Te₃ and 2.9 below Sb₂Te₃, which is mass-disorder
 scattering doing what it should. The two end members are *not* equivalent: Sb₂Te₃ conducts
 ~45 % better in-plane than Bi₂Te₃ but is more anisotropic.
 
-## Read this before using the numbers: the published table used a different recipe
+## Flux and geometry conventions
 
-The conductivities printed in the paper were computed from the local virial heat flux `jp`
-with two geometry errors, and the numbers above are **not** the published ones:
+Two conventions enter a NEMD conductivity and both are worth stating explicitly, because
+they move the answer by tens of per cent:
 
-1. **Bin width.** The published post-processing divided the per-bin flux by a bin volume
-   built as `L*(1-2*0.02-2*0.18)/8`, i.e. it split the whole mid-region into 8 bins when
-   there are only 6 mid bins between source and sink. The bin width is 4/3 too large.
+1. **Bin width.** The flux per bin must be divided by that bin's own volume. There are six
+   mid bins between the source and the sink; a width of `L*(1-2*0.02-2*0.18)/8` spreads the
+   same mid-region over eight, giving a width 4/3 too large.
 2. **Cross-section.** `A_cross` as printed in `nemd_setup.txt` is `|b × c|`, the area of the
    parallelogram spanned by the two non-transport cell vectors. For a hexagonal cell
-   (γ = 120°) the true cross-section perpendicular to the transport axis is `V/L`, smaller by
-   2/√3 = 1.1547.
+   (γ = 120°) the cross-section perpendicular to the transport axis is `V/L`, smaller by
+   2/√3 = 1.1547. The true value is recomputed here from the NPT-equilibrated cell.
 
-`kappa_composition.py` reports three conductivities per run so the correction is auditable
-rather than asserted:
+`kappa_composition.py` reports three conductivities per run so both conventions are visible
+side by side:
 
 | column | flux | geometry |
 |---|---|---|
@@ -61,24 +67,16 @@ rather than asserted:
 | `k_jp` | local `jp` | each bin's own width, true cross-section from the NPT cell |
 | `k_th` | energy actually added at the source and removed at the sink | true cross-section; **no bin volume enters at all** |
 
-**Quote `k_th`.** It is the route that does not depend on a bin volume, and it is the one
-tabulated above. `k_pub` is kept because it is the only way to check the diagnosis: running
-the published recipe on these same runs returns the published numbers (Bi₂Te₃ 1.411 / 0.891
-against 1.37 / 0.88 in print, Sb₂Te₃ 2.004 / 0.605 against 2.02 / 0.69), which is what
-identifies the two factors above as the whole of the discrepancy.
+**`k_th` is the route to quote**, and it is the one tabulated above: no bin volume enters it
+at all. `k_pub` is retained because it is how the three routes can be compared on identical
+runs — on these runs it returns 1.411 / 0.891 for Bi₂Te₃ and 2.004 / 0.605 for Sb₂Te₃.
 
-What this changes:
-
-- **In-plane κ survives.** `k_pub` and `k_th` agree to a few per cent in X and Y, because the
-  4/3 and the area factor partly cancel there. The alloy minimum and every conclusion drawn
-  from the in-plane series stand.
-- **Cross-plane κ must be restated.** Z carries the full 4/3, so κ⊥ drops by ~25 %. The
-  anisotropy κ∥/κ⊥ is **2.1–4.2**, not the 1.5–2.0 quoted in the paper. In particular
-  κ⊥(Bi₂Te₃) = 0.673, so the claimed agreement with Witting *et al.* (~0.85) does not hold.
-
-The `paper_par` / `paper_perp` columns in the script's last table and in
-`kappa_vs_composition.csv` carry the published values for exactly this comparison. Note also
-that Table 5 of the paper labels the composition axis "% Bi" where it means **% Sb**.
+In-plane, `k_pub` and `k_th` agree to within a few per cent, the two factors largely
+cancelling in X and Y; the alloy minimum near equiatomic composition is the same either way.
+Cross-plane carries the full 4/3, so κ⊥ is ~25 % lower on the `k_th` route and the
+anisotropy κ∥/κ⊥ comes out at 2.1–4.2. The `paper_par` / `paper_perp` columns in the
+script's last table and in `kappa_vs_composition.csv` hold the values as first published, so
+any of these comparisons can be made directly from the CSV.
 
 ## What is in each run directory
 

@@ -1,2 +1,4 @@
 plot_parity_test.py
 del/
+__pycache__/
+*.pyc
