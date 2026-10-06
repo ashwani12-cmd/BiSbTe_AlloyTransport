@@ -34,6 +34,10 @@ Reproduce with `python kappa_composition.py` (numpy only):
 Per-run values, gradients, areas and fit quality are in `kappa_composition.csv`; the series
 above is `kappa_vs_composition.csv`.
 
+**The figures are in `composition_figures/`** — κ∥, κ⊥ and the bulk average against Sb
+content, with error bars, fitted curves and a comparison against five literature data sets,
+plus the CSVs they are drawn from.
+
 **The extrapolations themselves are in `scaling_fits/`** — all 18 straight-line fits of
 1/κ against 1/L, one figure per composition and direction plus a 6 × 3 overview, with κ∞,
 its standard error, R² and the effective mean free path in `scaling_fits.csv`. Four of the
