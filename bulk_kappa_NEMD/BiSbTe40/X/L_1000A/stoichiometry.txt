@@ -1,0 +1,10 @@
+Material    : BiSbTe40
+Sb target   : 40%
+Sb actual   : 40.00%
+Seed        : 1
+Bi atoms    : 82080
+Sb atoms    : 54720
+Te atoms    : 205200
+Direction   : X
+L_transport : 1000.8960 A = 100.0896 nm
+A_cross     : 13276.2940 A2 = 132.7629 nm2

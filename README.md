@@ -57,16 +57,22 @@ BiSbTe_AlloyTransport/
 │   ├── plot_parity_test.py          # Parity plots (test set): energy/force/stress
 │   └── fig/                         # Generated parity plots and loss curve (PDF + PNG, 100k)
 │
-├── bulk_kappa_NEMD/
-│   └── Bi2Te3/                      # Bulk Bi2Te3 thermal conductivity via NEMD
-│       ├── X/                       # Transport along the a-axis
-│       ├── Y/                       # Transport along the b-axis
-│       └── Z/                       # Transport along the c-axis (cross-plane)
-│           ├── L_0250A/ .. L_1000A/      # System-length series for finite-size extrapolation
-│           ├── JP_vs_bin_JP*.pdf
-│           ├── finite_size_JP*.pdf
-│           ├── temperature_profiles_JP*.pdf
-│           └── post_processing_nemd_Jp.py
+├── bulk_kappa_NEMD/                 # Composition series at 300 K: 6 compositions x 3 directions x 4 lengths
+│   ├── README.md                    # Results table, and why these numbers differ from the published ones
+│   ├── kappa_composition.py         # Walks the whole tree -> per-run and per-composition kappa (numpy only)
+│   ├── kappa_composition.csv        # Per-run kappa, gradients, true vs printed cross-sections
+│   ├── kappa_vs_composition.csv     # kappa_par, kappa_perp and anisotropy vs % Sb
+│   ├── build_nemd_cells_AS_USED.py  # The cell/deck generator, verbatim (model.xyz is regenerable, not shipped)
+│   ├── Bi2Te3/, Sb2Te3/             # End members (x_Sb = 0 and 100 %)
+│   ├── BiSbTe20/, BiSbTe40/,        # Alloys: 20, 40, 60, 80 % Sb on the cation site
+│   │   BiSbTe60/, BiSbTe80/
+│   └── <comp>/{X,Y,Z}/L_0250A..L_1000A/
+│       ├── nemd_setup.txt           # Supercell, L_transport, A_cross as printed, group boundaries, bin centres
+│       ├── compute.out(.gz)         # Per-group T, the three jp blocks, source/sink thermostat energies
+│       ├── thermo.out(.gz)          # Includes the NPT cell vectors -> the TRUE cross-section
+│       ├── run.in, submit.sh        # GPUMD input and job script, verbatim
+│       ├── stoichiometry.txt        # Alloys: target/achieved Sb %, atom counts, substitution seed
+│       └── shc.out                  # Spectral heat current, where the run produced one
 │
 ├── interface_kappa_NEMD/
 │   ├── create_superlattices_FIXED.py         # Builds strained, stacked Bi2Te3/Sb2Te3 interface supercells
@@ -190,7 +196,7 @@ BiSbTe_AlloyTransport/
 1. **Structure generation** (`BiSbTe_alloy_endpoints/`) — DFT-relaxed primitive and conventional cells for Bi₂Te₃, Sb₂Te₃, and (Bi₁₋ₓSbₓ)₂Te₃ alloy compositions (20/40/60/80% Sb) computed in Quantum ESPRESSO with PBE ONCV pseudopotentials (fully relativistic).
 2. **Training set construction** (`training_data_json_format/`) — Equilibrium structures are perturbed via random displacement, uniaxial strain, and shear strain to sample the configuration space needed for a robust interatomic potential, without requiring full AIMD. The dataset is converted to NEP and MTP formats (`training_data_nep_format/`, `training_data_mtp_format/`) via `script/json_to_nepxyz.ipynb`.
 3. **NEP training** (`nep_train/`) — A neural equivariant potential is trained on energies, forces, virials, and stresses from the dataset, with parity plots (`fig/`) and the loss curve used to validate accuracy on held-out test data.
-4. **Bulk thermal conductivity** (`bulk_kappa_NEMD/`) — NEMD simulations of pure Bi₂Te₃ along the X, Y, and Z crystallographic directions, run over a series of system lengths for finite-size extrapolation of κ.
+4. **Bulk thermal conductivity** (`bulk_kappa_NEMD/`) — NEMD simulations of the full (Bi₁₋ₓSbₓ)₂Te₃ composition series at 300 K — x_Sb = 0, 20, 40, 60, 80 and 100 % — each along the X, Y and Z crystallographic directions and at four system lengths (25–100 nm) for finite-size extrapolation of κ. 72 runs in all. `kappa_composition.py` reproduces the whole table from the raw output with numpy alone. **The conductivities it reports are not the ones printed in the paper:** the published post-processing used a bin width 4/3 too large and a cross-sectional area carrying a spurious 2/√3 factor for the hexagonal cell. In-plane κ is almost unaffected (the two errors partly cancel) and the alloy minimum near equiatomic composition stands, but cross-plane κ drops by ~25 % and the anisotropy κ∥/κ⊥ becomes 2.1–4.2 rather than 1.5–2.0. The folder README gives all three routes side by side, including the published recipe, which reproduces the published numbers on these same runs and is what identifies the two factors.
 5. **Interfacial thermal transport** (`interface_kappa_NEMD/`) — Single-interface Bi₂Te₃/Sb₂Te₃ NEMD simulations at 200, 300, 400, and 500 K extract the Kapitza resistance (R_K) and interfacial thermal conductance (G_K). No interface configurations were included in training — these runs serve as a strict out-of-distribution transferability test of the NEP. Each temperature folder contains the full GPUMD run (FIRE minimisation → 1 ns NPT equilibration → 5 ns NEMD production on an A100 GPU), the spectral heat current output (`shc.out`), and publication-quality figures generated by `analyze_interface.py`.
 6. **Elastic constants — NEP/LAMMPS** (`elastic_constants_LAMMPS/`) — QE-relaxed structures for Bi₂Te₃, Sb₂Te₃, and each alloy composition are converted to LAMMPS data files (`pwi_lmp_alloy.py`) and run through LAMMPS' standard `in.elastic` strain-displacement workflow (using the trained NEP as the interatomic potential) to extract the full elastic constant tensor for each composition.
 7. **Elastic constants — DFT energy-strain** (`elastic_constants_DFT_energy_strain/`) — Independent DFT reference values for Bi₂Te₃, computed by applying small (±0.2%, ±0.4%) strains along five independent deformation modes, relaxing ions at fixed strained cell shape, and fitting the resulting `(E-E₀)/V₀` vs. strain `δ` curve to a quadratic. Each strain set's fit coefficient corresponds to a known linear combination of the Cij (see table below); solving the resulting 5×5 linear system yields the full independent set C11, C12, C13, C33, C44 (C66 follows algebraically as `(C11-C12)/2` for this trigonal symmetry, point group -3m — no separate strain set is needed for it).
