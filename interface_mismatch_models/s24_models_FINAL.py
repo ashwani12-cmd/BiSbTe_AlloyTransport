@@ -27,21 +27,36 @@ from calorine.calculators import CPUNEP
 from phonopy import Phonopy
 from phonopy.structure.atoms import PhonopyAtoms
 
+OUTJSON = 's24_models_FINAL.json'
+GRIDFILE = 's22_qha_grid.json'   # refined QHA grid (s22), NOT the old s8 one
+AMIN = 4.28                      # drop a = 4.27: dynamically unstable, see s23/s19b_NOTES
+CFIT_ORDER = 3                   # converged on the s22 grid: orders 3 and 4 agree to 0.2 %
 POT = 'nep.txt'; SITE = np.array([1/3, 2/3]); TS = [200, 300, 400, 500]
 H, KB, AMU = 6.62607015e-34, 1.380649e-23, 1.66053906660e-27
 NBIN = 500; fgrid = np.linspace(0, 5.2, NBIN); dfS = (fgrid[1] - fgrid[0]) * 1e12
 MASS = {'Bi': 208.98040, 'Sb': 121.760, 'Te': 127.60}
 
-raw = json.load(open('s8_qha_grid.json'))
+raw = json.load(open(GRIDFILE))
 G = {}
 for k, v in raw.items():
     cat, a, fc = k.split('|'); G[(cat, float(a), float(fc))] = v
-agrid = sorted(set(k[1] for k in G)); fcs = sorted(set(k[2] for k in G))
+agrid = [a for a in sorted(set(k[1] for k in G)) if a > AMIN]
+fcs = sorted(set(k[2] for k in G))
+print(f'QHA grid {GRIDFILE}: a = {agrid} (a<={AMIN} dropped), {len(fcs)} c points, '
+      f'F(c) fit order {CFIT_ORDER}')
 
-def Fmin_c(cat, a, ti):
+
+def Fmin_c(cat, a, ti, order=None):
+    order = CFIT_ORDER if order is None else order
     cs = np.array([G[(cat, a, fc)]['cQL'] for fc in fcs])
     Fs = np.array([G[(cat, a, fc)]['E'] + G[(cat, a, fc)]['F'][ti] for fc in fcs]) / 15.0
-    p = np.polyfit(cs, Fs, 2); c = -p[1] / (2 * p[0])
+    p = np.polyfit(cs, Fs, order)
+    if order == 2:
+        c = -p[1] / (2 * p[0])
+    else:
+        r = np.roots(np.polyder(p)); r = r[np.isreal(r)].real
+        r = r[(r > cs.min()) & (r < cs.max())]
+        c = float(r[np.argmin(np.polyval(p, r))]) if len(r) else float(cs[np.argmin(Fs)])
     return float(np.polyval(p, c)), float(c)
 
 def hexcell(a, c): return np.array([[a, 0, 0], [-a/2, a*np.sqrt(3)/2, 0], [0, 0, c]])
@@ -77,8 +92,14 @@ def flux(ph):
     idx = np.clip((f / (fgrid[1] - fgrid[0])).astype(int), 0, NBIN - 1)
     vz = gv[:, :, 2] * 100.0                      # THz*Angstrom -> m/s
     m = good & (vz > 0)
+    sel = np.zeros_like(m); sel[:, :3] = True
+    Ia = float(np.sum(vz[m & sel] * W[m & sel]) / (V * w.sum()))
+    Io = float(np.sum(vz[m & ~sel] * W[m & ~sel]) / (V * w.sum()))
+    vzbar = float(np.sum(vz[m] * W[m]) / np.sum(W[m]))
+    fbar_a = float(np.sum(f[m & sel] * W[m & sel]) / np.sum(W[m & sel]))
+    fbar_o = float(np.sum(f[m & ~sel] * W[m & ~sel]) / np.sum(W[m & ~sel]))
     return (np.bincount(idx[m], weights=vz[m] * W[m], minlength=NBIN) / (V * w.sum() * dfS),
-            float(f.max()), int((f < -0.05).sum()), f.size)
+            float(f.max()), int((f < -0.05).sum()), f.size, Ia, Io, vzbar, fbar_a, fbar_o)
 
 def sound_speeds_z(ph, c_hex_ang):
     """v along CARTESIAN z for the 3 acoustic branches, labelled LA/TA by EIGENVECTOR.
@@ -174,6 +195,16 @@ def dndT(f, T):
     x = np.clip(H * f * 1e12 / (KB * T), 1e-12, 500); e = np.exp(x)
     return (H * f * 1e12 / (KB * T * T)) * e / (e - 1) ** 2
 
+def G_quantum(Phi, alpha, T):
+    return float(np.sum(H * fgrid * 1e12 * Phi * dndT(fgrid, T) * alpha) * dfS) / 1e6
+
+def G_classical(Phi, alpha):
+    """hbar*w*dn/dT -> k_B: the harmonic conductance a CLASSICAL MD run can produce."""
+    return float(KB * np.sum(Phi * alpha) * dfS) / 1e6
+
+ONES = np.ones(NBIN)
+cache = []
+
 g0 = json.load(open('s2_epitaxial.json'))
 d1B, d2B = sorted(g0['Bi2Te3']['spacings'])[:2]
 d1S, d2S = sorted(g0['Sb2Te3']['spacings'])[:2]
@@ -200,7 +231,9 @@ for ti, T in enumerate(TS):
         BFGS(at, logfile=None).run(fmax=1e-4, steps=300)
         cc = float(np.array(at.get_cell())[2, 2])
         ph = phonons(at); phs[tag] = ph
-        fl[tag] = flux(ph)[0]
+        _F = flux(ph); fl[tag] = _F[0]
+        rec[f'flux_acoustic_{tag}'], rec[f'flux_optical_{tag}'] = _F[4], _F[5]
+        rec[f'vzbar_{tag}'], rec[f'fbar_a_{tag}'], rec[f'fbar_o_{tag}'] = _F[6], _F[7], _F[8]
         sp[tag] = sound_speeds_z(ph, cc)
         V = float(abs(np.linalg.det(np.array(at.get_cell())))) * 1e-30
         rho[tag] = sum(MASS[s] for s in at.get_chemical_symbols()) * AMU / V
@@ -231,6 +264,12 @@ for ti, T in enumerate(TS):
         amm[pol] = dict(v_Bi=v1, v_Sb=v2, Z_Bi=Z1, Z_Sb=Z2, gamma=g, theta_c_deg=thc)
     aA = float(np.mean([amm[p]['gamma'] for p in ('vTA1', 'vTA2', 'vLA')]))
     G_AMM = aA * G_radB
+    cache.append((P1, P2, aD, aA))
+    rec.update(G_DMM_classical=G_classical(P1, aD),
+               G_AMM_classical=aA * G_classical(P1, ONES),
+               G_rad_Bi_classical=G_classical(P1, ONES),
+               G_rad_Sb_classical=G_classical(P2, ONES),
+               alpha_DMM_classical=G_classical(P1, aD) / G_classical(P1, ONES))
 
     print(f"{T:4d} {G_DMM:8.2f} {G_DMM_mod:8.2f} {G_AMM:8.2f} {G_radB:9.2f} {G_radS:9.2f} "
           f"{aD_eff:7.3f} {aA:7.3f} {NEMD[T]:7.2f} {PAPER[T]:7.2f}")
@@ -241,7 +280,50 @@ for ti, T in enumerate(TS):
                NEMD_seed1=NEMD[T], paper=PAPER[T])
     out.append(rec)
 
-json.dump(out, open('s19_models.json', 'w'), indent=2)
+print("\n--- classical (k_B) limit: no Bose factor, like-for-like against classical MD ---")
+for r in out:
+    print(f"  {r['T']:4d} K  DMM {r['G_DMM_classical']:7.2f}  DMMmod "
+          f"{2*r['G_DMM_classical']:7.2f}  AMM {r['G_AMM_classical']:7.2f}  "
+          f"rad_Bi {r['G_rad_Bi_classical']:7.2f}  alpha {r['alpha_DMM_classical']:.4f}")
+c0, c1 = out[0], out[-1]
+print(f"  classical DMM_mod 200->500 K: {2*c0['G_DMM_classical']:.2f} -> "
+      f"{2*c1['G_DMM_classical']:.2f} = {100*(c1['G_DMM_classical']/c0['G_DMM_classical']-1):+.2f} %")
+
+print("\n--- G_rad,Bi: rows = geometry T, cols = Bose T (frozen-geometry split) ---")
+print(f"{'geom/Bose':>10}" + "".join(f"{T:>9d}" for T in TS) + f"{'classical':>11}")
+grid = np.zeros((len(TS), len(TS)))
+for gi, Tg in enumerate(TS):
+    P1 = cache[gi][0]
+    grid[gi] = [G_quantum(P1, ONES, Tb) for Tb in TS]
+    print(f"{Tg:>10d}" + "".join(f"{v:9.2f}" for v in grid[gi]) +
+          f"{G_classical(P1, ONES):11.2f}")
+d_stat = grid[0, -1]/grid[0, 0] - 1.0
+d_geom = grid[-1, 0]/grid[0, 0] - 1.0
+d_tot  = grid[-1, -1]/grid[0, 0] - 1.0
+print(f"\n  statistics only (row 200):    {d_stat*100:+6.2f} %")
+print(f"  geometry only  (col 200):     {d_geom*100:+6.2f} %")
+print(f"  reported (diagonal):          {d_tot*100:+6.2f} %  [sum {100*(d_stat+d_geom):+6.2f} %]")
+print(f"  geometry/statistics ratio:    {abs(d_geom/d_stat):.2f}")
+assert abs(grid[0,0]-out[0]['G_rad_Bi'])<1e-9 and abs(grid[-1,-1]-out[-1]['G_rad_Bi'])<1e-9
+
+print("\n--- where the softening sits (Bi2Te3, 200 -> 500 K) ---")
+for lab, k in (('acoustic', 'flux_acoustic_Bi'), ('optical', 'flux_optical_Bi')):
+    a0, a1 = out[0][k], out[-1][k]
+    tot = out[0]['flux_acoustic_Bi'] + out[0]['flux_optical_Bi']
+    print(f"  sum(Phi)df {lab:9s}: {a0:.4e} -> {a1:.4e}  {100*(a1/a0-1):+6.2f} %"
+          f"   ({100*a0/tot:.1f} % of total)")
+print(f"  mean positive v_z        : {out[0]['vzbar_Bi']:.1f} -> {out[-1]['vzbar_Bi']:.1f} m/s"
+      f"  {100*(out[-1]['vzbar_Bi']/out[0]['vzbar_Bi']-1):+6.2f} %")
+print(f"  band-mean freq  acoustic : {out[0]['fbar_a_Bi']:.4f} -> {out[-1]['fbar_a_Bi']:.4f} THz"
+      f"  {100*(out[-1]['fbar_a_Bi']/out[0]['fbar_a_Bi']-1):+6.2f} %")
+print(f"  band-mean freq  optical  : {out[0]['fbar_o_Bi']:.4f} -> {out[-1]['fbar_o_Bi']:.4f} THz"
+      f"  {100*(out[-1]['fbar_o_Bi']/out[0]['fbar_o_Bi']-1):+6.2f} %")
+print(f"  Gamma-slope LA           : {out[0]['AMM_per_pol']['vLA']['v_Bi']:.1f} -> "
+      f"{out[-1]['AMM_per_pol']['vLA']['v_Bi']:.1f} m/s  "
+      f"{100*(out[-1]['AMM_per_pol']['vLA']['v_Bi']/out[0]['AMM_per_pol']['vLA']['v_Bi']-1):+6.2f} %")
+print("  -> the Gamma slope UNDERSTATES the softening; the flux integrates mesh-wide v_z.")
+
+json.dump(out, open(OUTJSON, 'w'), indent=2)
 print("\n--- sound speeds along z (m/s), 200 K ---")
 r = out[0]
 for pol in ('vTA1', 'vTA2', 'vLA'):

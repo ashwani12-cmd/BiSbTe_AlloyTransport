@@ -135,10 +135,16 @@ BiSbTe_AlloyTransport/
 │   ├── s1_bulk.py                            # Free R-3m equilibrium of each compound (15-atom cell, 3 QL)
 │   ├── s2_strain_balance.py                  # Common in-plane lattice constant for a coherent interface
 │   ├── s5_phonon_check.py                    # Dynamical-stability check (no imaginary modes)
-│   ├── s8_qha.py                             # Quasi-harmonic F(a,c,T) grid -> T-dependent geometry
-│   ├── s19_mismatch_models.py                # The three models -> s19_models.json
-│   ├── plot_GK_models.py                     # The figure (data hard-coded, standalone)
-│   ├── s*_*.json                             # Results of each stage
+│   ├── s22_qha_refined.py                    # Quasi-harmonic F(a,c,T) grid -> T-dependent geometry
+│   ├── s23_qha_convergence.py                # Convergence gate on that grid (3 of its 4 tests pass; see its README)
+│   ├── s24_models_FINAL.py                   # The three models -> s24_models_FINAL.json
+│   ├── s25_fixed_geometry_FINAL.py           # Frozen-geometry control: the T-trend is geometric, not statistical
+│   ├── s26_dispersion_FINAL.py               # Gamma-Z dispersion, flux spectra and alpha(omega) at 300 K
+│   ├── s8_qha.py                             # The superseded first grid, kept only for the gate to compare against
+│   ├── plot_GK_models.py, plot_dispersion.py # The two figures (G_K data hard-coded, standalone)
+│   ├── AMM_DMM_EXPLAINED.md                  # What each model assumes and where each one is right
+│   ├── s19b_NOTES.md, s24_FINAL_NOTES.md     # The audit that rejected the first grid, and the regeneration
+│   ├── s*_*.json, s26_*.npz                  # Results of each stage
 │   ├── s1_*.xyz, s2_*.xyz                    # Relaxed and strain-balanced structures
 │   └── nep.txt -> ../nep_train/nep.txt       # Symlink; copy by hand if your checkout drops symlinks
 │
@@ -189,7 +195,7 @@ BiSbTe_AlloyTransport/
 6. **Elastic constants — NEP/LAMMPS** (`elastic_constants_LAMMPS/`) — QE-relaxed structures for Bi₂Te₃, Sb₂Te₃, and each alloy composition are converted to LAMMPS data files (`pwi_lmp_alloy.py`) and run through LAMMPS' standard `in.elastic` strain-displacement workflow (using the trained NEP as the interatomic potential) to extract the full elastic constant tensor for each composition.
 7. **Elastic constants — DFT energy-strain** (`elastic_constants_DFT_energy_strain/`) — Independent DFT reference values for Bi₂Te₃, computed by applying small (±0.2%, ±0.4%) strains along five independent deformation modes, relaxing ions at fixed strained cell shape, and fitting the resulting `(E-E₀)/V₀` vs. strain `δ` curve to a quadratic. Each strain set's fit coefficient corresponds to a known linear combination of the Cij (see table below); solving the resulting 5×5 linear system yields the full independent set C11, C12, C13, C33, C44 (C66 follows algebraically as `(C11-C12)/2` for this trigonal symmetry, point group -3m — no separate strain set is needed for it).
 
-8. **Interface mismatch models** (`interface_mismatch_models/`) — Analytic interface conductance of the Bi₂Te₃|Sb₂Te₃ junction from the acoustic mismatch model (AMM), the diffuse mismatch model (DMM) and the phonon radiation limit, evaluated from the NEP phonon dispersion on a relaxed, strain-balanced cell (a = 4.3162 Å) at quasi-harmonically expanded geometries for 200–500 K. Lattice dynamics only — no molecular dynamics enters this folder. The one-sided phonon flux is taken from the full dispersion on a 24×24×8 mesh rather than a Debye approximation, and both the original and the modified-Landauer temperature-drop conventions are reported. The DMM is a lower bound for this material pair, not an estimate: detailed balance caps its transmission at 0.5 even for two identical solids, and Bi₂Te₃ and Sb₂Te₃ are acoustically matched to within 15–29%.
+8. **Interface mismatch models** (`interface_mismatch_models/`) — Analytic interface conductance of the Bi₂Te₃|Sb₂Te₃ junction from the acoustic mismatch model (AMM), the diffuse mismatch model (DMM) and the phonon radiation limit, evaluated from the NEP phonon dispersion on a relaxed, strain-balanced cell (a = 4.3162 Å) at quasi-harmonically expanded geometries for 200–500 K. Lattice dynamics only — no molecular dynamics enters this folder. The one-sided phonon flux is taken from the full dispersion on a 24×24×8 mesh rather than a Debye approximation, and both the original and the modified-Landauer temperature-drop conventions are reported. All three models *fall* by 6–10% between 200 and 500 K, which is the opposite of the textbook fixed-geometry result, so a frozen-lattice control (`s25`) is included to show that the decrease is the quasi-harmonic expansion of the van der Waals gaps and not the phonon occupations. The quasi-harmonic grid carries its own convergence gate (`s23`), because the first version of this folder was built on a grid that was not converged — the numbers here replace it. The DMM is a lower bound for this material pair, not an estimate: detailed balance caps its transmission at 0.5 even for two identical solids, and Bi₂Te₃ and Sb₂Te₃ are acoustically matched to within 14–31%.
 
 ### DFT elastic constants — Bi₂Te₃ results
 
